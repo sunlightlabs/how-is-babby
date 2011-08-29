@@ -1,62 +1,68 @@
 #!/usr/bin/env python
 import freenect
-import frame_convert
 import cv
 import numpy
-from pylab import ion, plot, draw, axis, imshow
-import time
+from utils import RingBuffer, AvgMatrix, simplify_cv
 
-depth_acc = cv.fromarray(numpy.zeros((480,640), dtype=numpy.float32))
+# globals
+PERCENT_THRESHOLD = 0.0
+FRAME_WINDOW = 15
+CHANGE_THRESHOLD = 1.1
+RING_SIZE = 100
+MIN_REPORT_EVENT = 20
 
-cv.NamedWindow('Depth')
+dsum_buffer = RingBuffer(RING_SIZE)
+ZEROS = numpy.zeros((480, 640), numpy.uint8)
+running_avg = AvgMatrix(FRAME_WINDOW)
 
-class RingBuffer(object):
-
-    def __init__(self, size):
-        self._size = size
-        self._buffer = [0]*size
-
-    def add(self, value):
-        self._buffer.append(value)
-        self._buffer = self._buffer[-self._size:]
-
-    def mean(self):
-        return numpy.mean(self._buffer)
-
-    def stddev(self):
-        return numpy.std(self._buffer)
-
-    def delta(self, val):
-        return abs(self.mean()-val)
-
-    def std_delta(self, val):
-        return float(self.delta(val))/self.stddev()
-
-
-dsum_buffer = RingBuffer(100)
-
-def simplify_cv(data):
-    img = frame_convert.pretty_depth_cv(data)
-    return img
+frames = 0
+calibrated = False
+motion_frames = 0
 
 def depth_callback(dev, data, timestamp):
     global dsum_buffer
+    global running_avg
+    global calibrated
+    global frames
+    global motion_began
+    global motion_frames
 
-    # use runningAvg
-    cv.RunningAvg(cv.fromarray(data.astype(numpy.float32)),
-                  depth_acc, 0.01)
-    depth_diff = depth_acc - data
+    frames += 1
+    if frames > 1.5*RING_SIZE and not calibrated:
+        print 'Calibrated!'
+        calibrated = True
 
-    # difference from sum of buffer
-    dsum = data.sum()
-    dsum_buffer.add(dsum)
-    delta = dsum_buffer.std_delta(dsum)
-    if delta > 2.0:
-        print 'motion!', delta
+    running_avg.add(data)
 
-    img = simplify_cv(data)
-    cv.ShowImage('Depth', img)
-    if cv.WaitKey(10) == 27:
-        raise Exception('quit!')
+    if calibrated:
+        mean_array = running_avg.mean()
+        diff_array = abs(mean_array.astype(numpy.int16)-data.astype(numpy.int16))
+        diff_array = numpy.where(diff_array/mean_array > PERCENT_THRESHOLD,
+                                 mean_array, ZEROS)
 
-freenect.runloop(depth=depth_callback)
+        # difference from sum of buffer
+        dsum = mean_array.sum()
+        dsum_buffer.add(dsum)
+        delta = dsum_buffer.std_delta(dsum)
+        if delta > CHANGE_THRESHOLD:
+            motion_began = timestamp
+            motion_frames += 1
+
+            if motion_frames == MIN_REPORT_EVENT:
+                print 'motion event...',
+        else:
+            if motion_frames == 1:
+                print 'ended'
+            motion_frames = max(motion_frames-1, 0)
+
+        cv.ShowImage('DepthAvg', simplify_cv(mean_array.astype(numpy.uint16)))
+        cv.ShowImage('DepthDiff', simplify_cv(diff_array.astype(numpy.uint16)))
+        if cv.WaitKey(10) == 27:
+            raise Exception('quit!')
+
+
+if __name__ == '__main__':
+    #cv.NamedWindow('Depth')
+    cv.NamedWindow('DepthAvg')
+    cv.NamedWindow('DepthDiff')
+    freenect.runloop(depth=depth_callback)
