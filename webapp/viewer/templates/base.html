@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-1.1.1.min.css">
+        <title>How Is Babby</title>
+    </head>
+    <body style="padding-top: 40px">
+        <div class="container-fluid">
+
+            <div class="topbar-wrapper">
+                <div class="topbar">
+                    <div class="fill">
+                        <div class="container">
+                            <h3>
+                                <a href="#">How Is Babby</a>
+                            </h3>
+                            <ul>
+                                <li class="active"><a href="#">Monitor</a></li>
+                                <li><a href="/log">See Log</a></li>
+                                <li><a href="#">Configure</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="span8 columns">
+                    <div class="alert-message">
+                        <a class="close" href="#">x</a>
+                        <p><strong>Alert!</strong> The babby is on the move!</p>
+                    </div>
+                </div>
+            </div>
+
+            {% block content %}
+            {% endblock %}
+
+            <div class="row">
+                <div class="span3 columns offset1">
+                    <ul id="links">
+                        <li>Configure</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span3 columns offset1">
+                    <p id="credits">Copyright 2011, Labs Olympics Winners</p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
