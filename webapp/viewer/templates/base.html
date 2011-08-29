@@ -14,9 +14,9 @@
                                 <a href="#">How Is Babby</a>
                             </h3>
                             <ul>
-                                <li class="active"><a href="#">Monitor</a></li>
-                                <li><a href="/log">See Log</a></li>
-                                <li><a href="#">Configure</a></li>
+                                {% block nav-index %}<li><a href="{% url viewer_index %}">Monitor</a></li>{% endblock %}
+                                {% block nav-log %}<li><a href="{% url viewer_log %}">See Log</a></li>{% endblock %}
+                                {% block nav-configure %}<li><a href="{% url viewer_configure %}">Configure</a></li>{% endblock %}
                             </ul>
                         </div>
                     </div>
