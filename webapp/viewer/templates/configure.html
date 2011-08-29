@@ -3,5 +3,43 @@
 {% block nav-configure %}<li class="active"><a href="{% url viewer_configure %}">Configure</a></li>{% endblock %}
 
 {% block content %}
-TODO!!
+<div class="row">
+    <div class="span8 columns">
+        <form>
+            <fieldset>
+                <legend>Sensitivity Settings</legend>
+                <div class="clearfix">
+                    <label for="motion_sensitivity">Motion Sensitivity</label>
+                    <div class="input">
+                        <ul class="inputs-list">
+                            <li><input type="radio" name="motion_sensitivity" value="low">Low</input></li>
+                            <li><input type="radio" name="motion_sensitivity" value="medium">Medium</input></li>
+                            <li><input type="radio" name="motion_sensitivity" value="high">High</input></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <label for="sound_sensitivity">Sound Sensitivity</label>
+                    <div class="input">
+                        <ul class="inputs-list">
+                            <li><input type="radio" name="sound_sensitivity" value="low">Low</input></li>
+                            <li><input type="radio" name="sound_sensitivity" value="medium">Medium</input></li>
+                            <li><input type="radio" name="sound_sensitivity" value="high">High</input></li>
+                        </ul>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Account Info</legend>
+                <div class="clearfix">
+                    <label for="sms_email_address">SMS Email Address</label>
+                    <div class="input">
+                        <input type="text" name="sms_email_address" />
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
