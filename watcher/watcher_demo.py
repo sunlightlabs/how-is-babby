@@ -1,62 +1,37 @@
 #!/usr/bin/env python
 import freenect
-import frame_convert
 import cv
 import numpy
-from pylab import ion, plot, draw, axis, imshow
-import time
+from utils import RingBuffer, AvgMatrix, simplify_cv
 
-depth_acc = cv.fromarray(numpy.zeros((480,640), dtype=numpy.float32))
+# globals
+dsum_buffer = RingBuffer(1000)
+running_avg = AvgMatrix(15)
+ZEROS = numpy.zeros((480,640), numpy.uint8)
 
-cv.NamedWindow('Depth')
-
-class RingBuffer(object):
-
-    def __init__(self, size):
-        self._size = size
-        self._buffer = [0]*size
-
-    def add(self, value):
-        self._buffer.append(value)
-        self._buffer = self._buffer[-self._size:]
-
-    def mean(self):
-        return numpy.mean(self._buffer)
-
-    def stddev(self):
-        return numpy.std(self._buffer)
-
-    def delta(self, val):
-        return abs(self.mean()-val)
-
-    def std_delta(self, val):
-        return float(self.delta(val))/self.stddev()
-
-
-dsum_buffer = RingBuffer(100)
-
-def simplify_cv(data):
-    img = frame_convert.pretty_depth_cv(data)
-    return img
 
 def depth_callback(dev, data, timestamp):
     global dsum_buffer
+    global running_avg
 
-    # use runningAvg
-    cv.RunningAvg(cv.fromarray(data.astype(numpy.float32)),
-                  depth_acc, 0.01)
-    depth_diff = depth_acc - data
+    running_avg.add(data)
+    mean_array = running_avg.mean()
 
     # difference from sum of buffer
-    dsum = data.sum()
+    dsum = mean_array.sum()
     dsum_buffer.add(dsum)
     delta = dsum_buffer.std_delta(dsum)
-    if delta > 2.0:
-        print 'motion!', delta
+    if delta > 0.5:
+        print 'dsum motion', delta
 
-    img = simplify_cv(data)
+    img = simplify_cv(data.copy())
     cv.ShowImage('Depth', img)
+    cv.ShowImage('DepthDiff', simplify_cv(mean_array.astype(numpy.uint16)))
     if cv.WaitKey(10) == 27:
         raise Exception('quit!')
 
-freenect.runloop(depth=depth_callback)
+if __name__ == '__main__':
+    cv.NamedWindow('Depth')
+    cv.NamedWindow('DepthDiff')
+    freenect.runloop(depth=depth_callback)
+
