@@ -11,7 +11,7 @@
                     <div class="fill">
                         <div class="container">
                             <h3>
-                                <a href="#">How Is Babby</a>
+                                <a href="{% url viewer_index %}">How Is Babby</a>
                             </h3>
                             <ul>
                                 {% block nav-index %}<li><a href="{% url viewer_index %}">Monitor</a></li>{% endblock %}
@@ -24,8 +24,8 @@
             </div>
 
 
-            <div class="row">
-                <div class="span8 columns">
+            <div class="row show-grid">
+                <div class="span4 columns">
                     <div class="alert-message">
                         <a class="close" href="#">x</a>
                         <p><strong>Alert!</strong> The babby is on the move!</p>
@@ -38,7 +38,7 @@
 
             <div class="row">&nbsp;</div>
             <div class="row">
-                <div class="span4 columns">
+                <div class="span8 columns">
                     <p id="credits">Copyright 2011, Labs Olympics Winners</p>
                 </div>
             </div>
