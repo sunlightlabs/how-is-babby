@@ -3,13 +3,13 @@
 {% block nav-index %}<li class="active"><a href="{% url viewer_index %}">Monitor</a></li>{% endblock %}
 
 {% block content %}
-            <div id="frames">
-                <div id="current_frame span4 rows">
-                    <!-- video frames go here -->
+            <div id="frames" class="row">
+                <div id="current_frame" class="span4 columns">
+                    <img width="300" height="300" id="video_frame" src="" alt="The Babby"/>
                 </div>
             </div>
             <div class="row">
-                <div class="span4 columns offset3">
+                <div class="span4 columns">
                     <form>
                         <button class="btn success">Start/Stop Notifications</button>
                     </form>
