@@ -24,14 +24,21 @@
             </div>
 
 
+            {% if messages %}
             <div class="row show-grid">
-                <div class="span4 columns">
+                <div class="span8 columns">
+                    {% for message in messages %}
                     <div class="alert-message">
-                        <a class="close" href="#">x</a>
-                        <p><strong>Alert!</strong> The babby is on the move!</p>
+                        <!--
+                        <a class="close" href="#">x</a>-->
+                        <p><strong>Alert!</strong> {{ message }}</p>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
+            {% endif %}
+
+            <div class="row">&nbsp;</div>
 
             {% block content %}
             {% endblock %}

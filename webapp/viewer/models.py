@@ -1,3 +1,5 @@
 from django.db import models
 
-# Create your models here.
+class Alert(models.Model):
+    event_type = models.CharField(max_length=6, null=False, blank=False)
+
