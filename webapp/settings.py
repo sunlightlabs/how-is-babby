@@ -82,6 +82,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'viewer',
+    'persistent_messages',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
@@ -89,6 +90,7 @@ INSTALLED_APPS = (
 )
 
 AUTH_PROFILE_MODULE = 'viewer.UserProfile'
+MESSAGE_STORAGE = 'persistent_messages.storage.PersistentMessageStorage'
 
 
 try:

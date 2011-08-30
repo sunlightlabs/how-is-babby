@@ -1,9 +1,9 @@
 from django.contrib.auth import authenticate, login
-from django.db.models import F
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
 from viewer.models import Alert, ConfigForm
+import persistent_messages
 import time
 
 def set_user(request):
@@ -25,9 +25,9 @@ def set_up_alert(request):
     alert = get_alert_obj()
     if alert:
         if alert.event_type == 'motion':
-            messages.info(request, 'The babby is on the move!', extra_tags='warning')
+            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning')
         else:
-            messages.info(request, 'The babby is crying!', extra_tags='warning')
+            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning')
 
 def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):

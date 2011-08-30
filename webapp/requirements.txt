@@ -1,0 +1,1 @@
+-e git://github.com/philomat/django-persistent-messages.git#egg=django-persistent-messages
