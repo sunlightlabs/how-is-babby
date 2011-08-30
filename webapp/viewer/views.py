@@ -5,6 +5,7 @@ from django.contrib import messages
 from viewer.models import Alert, ConfigForm
 import persistent_messages
 import time
+from datetime import datetime, timedelta
 
 def set_user(request):
     if not request.user.is_authenticated():
