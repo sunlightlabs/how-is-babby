@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+import time
 import freenect
+import boto
 import cv
 import numpy
 from utils import RingBuffer, AvgMatrix, simplify_cv
+from frame_convert import video_cv
 
 from django.core.management import setup_environ
 from webapp import settings
@@ -28,7 +31,13 @@ class Watcher(object):
         self.motion_frames = 0
         self.mode = 'uncalibrated'
         self._set_led = freenect.LED_BLINK_YELLOW
+        self._last_img = 0
+        self.snapshot_secs = 30
+        self.debug = True
 
+        self.s3bucket = boto.connect_s3(settings.AWS_KEY,
+                                        settings.AWS_SECRET).create_bucket(
+                                            settings.AWS_BUCKET)
 
     def set_mode(self, mode):
         if mode == 'nomotion':
@@ -74,10 +83,9 @@ class Watcher(object):
                     self.set_mode('nomotion')
                     # could log how long the event was and its intensity here
 
-            cv.ShowImage('DepthAvg', simplify_cv(mean_array.astype(numpy.uint16)))
-
-        # always do this or it freezes
-        cv.WaitKey(1)
+            if self.debug:
+                cv.ShowImage('DepthAvg', simplify_cv(mean_array.astype(numpy.uint16)))
+                cv.WaitKey(1)
 
 
     def body_callback(self, dev, ctx):
@@ -88,8 +96,18 @@ class Watcher(object):
             self._set_led = None
 
 
+    def video_callback(self, dev, data, timestamp):
+        if self._last_img + self.snapshot_secs < time.time():
+            cv.SaveImage('babby-current.jpg', video_cv(data))
+            k = boto.s3.key.Key(self.s3bucket)
+            k.key = '/babby/current.jpg'
+            k.set_contents_from_filename('babby-current.jpg')
+            k.set_acl('public-read')
+
+
 if __name__ == '__main__':
     cv.NamedWindow('DepthAvg')
     watcher = Watcher()
     freenect.runloop(depth=watcher.depth_callback,
+                     video=watcher.video_callback,
                      body=watcher.body_callback)
