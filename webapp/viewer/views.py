@@ -25,9 +25,9 @@ def set_up_alert(request):
     alert = get_alert_obj()
     if alert:
         if alert.event_type == 'motion':
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning')
+            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning', email=True)
         else:
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning')
+            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning', email=True)
 
 def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):

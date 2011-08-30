@@ -92,6 +92,10 @@ INSTALLED_APPS = (
 AUTH_PROFILE_MODULE = 'viewer.UserProfile'
 MESSAGE_STORAGE = 'persistent_messages.storage.PersistentMessageStorage'
 
+EMAIL_BACKEND = 'postmark.django_backend.EmailBackend'
+POSTMARK_API_KEY = '14da7853-3560-4179-a5a8-d91f380796b4'
+POSTMARK_SENDER = 'babby@sunlightfoundation.com'
+
 
 try:
     from local_settings import *
