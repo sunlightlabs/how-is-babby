@@ -23,8 +23,10 @@ class Watcher(object):
         self._last_img = 0
         self._last_setting_check = 0
 
+        self.settings_delay = 5
+
         self.debug = True
-        self.nightvision = False
+        self.nightvision = None
         self._set_video = None
         self.dsum_buffer = RingBuffer(100)
         self.running_avg = AvgMatrix(15)
@@ -123,7 +125,7 @@ class Watcher(object):
             freenect.start_video(dev)
             self._set_video = None
 
-        if self._last_setting_check + 15 < time.time():
+        if self._last_setting_check + self.settings_delay < time.time():
             self.load_settings()
             self._last_setting_check = time.time()
 
