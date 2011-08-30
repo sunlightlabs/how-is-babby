@@ -20,7 +20,6 @@ class Watcher(object):
         self.motion_frames = 0
         self.mode = 'uncalibrated'
         self._set_led = freenect.LED_BLINK_YELLOW
-        self._set_video = freenect.VIDEO_IR_8BIT
         self._last_img = 0
         self._last_setting_check = 0
 
@@ -31,13 +30,22 @@ class Watcher(object):
                                             settings.AWS_BUCKET)
 
     def load_settings(self):
+        try:
+            profile = UserProfile.objects.get()
+        except:
+            pass
+
         self.dsum_buffer = RingBuffer(100)
         self.running_avg = AvgMatrix(15)
         self.change_threshold = 1.1
         self.min_report_event = 20
         self.debug = True
         self.snapshot_secs = 5
+
         self.nightvision = True
+        self._set_video = freenect.VIDEO_IR_8BIT
+        #self.nightvision = False
+        #self._set_video = freenect.VIDEO_RGB
 
 
     def set_mode(self, mode):
@@ -81,7 +89,7 @@ class Watcher(object):
                     # could log how long the event was and its intensity here
 
             if self.debug:
-                cv.ShowImage('DepthAvg', simplify_cv(mean_array.astype(numpy.uint16)))
+                cv.ShowImage('Depth', simplify_cv(mean_array.astype(numpy.uint16)))
                 cv.WaitKey(1)
 
 
@@ -92,7 +100,7 @@ class Watcher(object):
             freenect.set_led(dev, self._set_led)
             self._set_led = None
 
-        if not self._set_video:
+        if self._set_video:
             freenect.stop_video(dev)
             freenect.set_video_mode(dev, freenect.RESOLUTION_MEDIUM,
                                     self._set_video)
@@ -100,14 +108,20 @@ class Watcher(object):
             self._set_video = None
 
         if self._last_setting_check + 15 < time.time():
-            #profile = UserProfile.objects.get()
             pass
 
 
     def video_callback(self, dev, data, timestamp):
+        if self.nightvision:
+            cv_data = simplify_cv(data)
+        else:
+            cv_data = video_cv(data)
+
+        if self.debug:
+            cv.ShowImage('Video', cv_data)
+
         if self._last_img + self.snapshot_secs < time.time():
-            cv.SaveImage('babby-current.jpg', simplify_cv(data))
-            #cv.SaveImage('babby-current.jpg', video_cv(data))
+            cv.SaveImage('babby-current.jpg', cv_data)
             k = boto.s3.key.Key(self.s3bucket)
             k.key = '/babby/current.jpg'
             k.set_contents_from_filename('babby-current.jpg')
@@ -116,7 +130,8 @@ class Watcher(object):
 
 
 if __name__ == '__main__':
-    cv.NamedWindow('DepthAvg')
+    cv.NamedWindow('Video')
+    cv.NamedWindow('Depth')
     watcher = Watcher()
     freenect.runloop(depth=watcher.depth_callback,
                      video=watcher.video_callback,
