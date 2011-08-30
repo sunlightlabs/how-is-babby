@@ -12,6 +12,9 @@ class RingBuffer(object):
         self._size = size
         self._buffer = [0]*size
 
+    def size(self):
+        return self._size
+
     def add(self, value):
         self._buffer.append(value)
         self._buffer.pop(0)

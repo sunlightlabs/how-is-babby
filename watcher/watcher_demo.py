@@ -10,34 +10,35 @@ from frame_convert import video_cv
 from django.core.management import setup_environ
 from webapp import settings
 setup_environ(settings)
-from webapp.viewer.models import Alert
-
-# globals
-PERCENT_THRESHOLD = 0.0
-FRAME_WINDOW = 15
-CHANGE_THRESHOLD = 1.1
-RING_SIZE = 100
-MIN_REPORT_EVENT = 20
-ZEROS = numpy.zeros((480, 640), numpy.uint8)
-
+from webapp.viewer.models import Alert, UserProfile
 
 class Watcher(object):
 
 
     def __init__(self):
-        self.dsum_buffer = RingBuffer(RING_SIZE)
-        self.running_avg = AvgMatrix(FRAME_WINDOW)
         self.frame_count = 0
         self.motion_frames = 0
         self.mode = 'uncalibrated'
         self._set_led = freenect.LED_BLINK_YELLOW
+        self._set_video = freenect.VIDEO_IR_8BIT
         self._last_img = 0
-        self.snapshot_secs = 30
-        self.debug = True
+        self._last_setting_check = 0
+
+        self.load_settings()
 
         self.s3bucket = boto.connect_s3(settings.AWS_KEY,
                                         settings.AWS_SECRET).create_bucket(
                                             settings.AWS_BUCKET)
+
+    def load_settings(self):
+        self.dsum_buffer = RingBuffer(100)
+        self.running_avg = AvgMatrix(15)
+        self.change_threshold = 1.1
+        self.min_report_event = 20
+        self.debug = True
+        self.snapshot_secs = 5
+        self.nightvision = True
+
 
     def set_mode(self, mode):
         if mode == 'nomotion':
@@ -55,14 +56,10 @@ class Watcher(object):
 
         if self.mode == 'uncalibrated':
             self.frame_count += 1
-            if self.frame_count > RING_SIZE:
+            if self.frame_count == self.dsum_buffer.size():
                 self.set_mode('nomotion')
         else:
             mean_array = self.running_avg.mean()
-            # diff array not needed unless we want to show where motion is
-            #diff_array = abs(mean_array.astype(numpy.int16)-data.astype(numpy.int16))
-            #diff_array = numpy.where(diff_array/mean_array > PERCENT_THRESHOLD,
-            #                         mean_array, ZEROS)
 
             # difference from sum of buffer
             dsum = mean_array.sum()
@@ -70,9 +67,9 @@ class Watcher(object):
             delta = self.dsum_buffer.std_delta(dsum)
 
             # frame will count as a motion frame
-            if delta > CHANGE_THRESHOLD:
+            if delta > self.change_threshold:
                 self.motion_frames += 1
-                if (self.motion_frames == MIN_REPORT_EVENT and
+                if (self.motion_frames == self.min_report_event and
                     self.mode == 'nomotion'):
                     self.set_mode('motion')
                     Alert.objects.create(event_type='motion')
@@ -95,14 +92,27 @@ class Watcher(object):
             freenect.set_led(dev, self._set_led)
             self._set_led = None
 
+        if not self._set_video:
+            freenect.stop_video(dev)
+            freenect.set_video_mode(dev, freenect.RESOLUTION_MEDIUM,
+                                    self._set_video)
+            freenect.start_video(dev)
+            self._set_video = None
+
+        if self._last_setting_check + 15 < time.time():
+            #profile = UserProfile.objects.get()
+            pass
+
 
     def video_callback(self, dev, data, timestamp):
         if self._last_img + self.snapshot_secs < time.time():
-            cv.SaveImage('babby-current.jpg', video_cv(data))
+            cv.SaveImage('babby-current.jpg', simplify_cv(data))
+            #cv.SaveImage('babby-current.jpg', video_cv(data))
             k = boto.s3.key.Key(self.s3bucket)
             k.key = '/babby/current.jpg'
             k.set_contents_from_filename('babby-current.jpg')
             k.set_acl('public-read')
+            self._last_img = time.time()
 
 
 if __name__ == '__main__':
