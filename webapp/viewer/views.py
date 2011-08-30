@@ -5,6 +5,7 @@ from django.contrib import messages
 from viewer.models import Alert, ConfigForm
 import persistent_messages
 import time
+from datetime import datetime, timedelta
 
 def set_user(request):
     if not request.user.is_authenticated():
@@ -12,22 +13,23 @@ def set_user(request):
         login(request, user)
 
 
-def get_alert_obj():
+def create_alert_obj():
     cur_time = round(time.time())
     type_switch = cur_time % 3
     alert_switch = cur_time % 5
     if alert_switch == 1:
-        return Alert.objects.create(event_type='motion' if type_switch else 'sound')
-    else:
-        return None
+        Alert.objects.create(event_type='motion' if type_switch else 'sound')
+
+def get_alert_obj():
+    alerts = Alert.objects.filter(timestamp__gte=datetime.now()-timedelta(seconds=10)).order_by('timestamp')
+    if len(alerts):
+        return alerts[0]
 
 def set_up_alert(request):
+    create_alert_obj()
     alert = get_alert_obj()
     if alert:
-        if alert.event_type == 'motion':
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning')
-        else:
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning')
+        persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning')
 
 def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):
