@@ -1,4 +1,6 @@
 *.pyc
 *.swk
 *.swj
+*.swi
 *.db
+local_settings.py
