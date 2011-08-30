@@ -1,0 +1,13 @@
+{% if messages %}
+<div class="row show-grid">
+    <div class="span8 columns">
+        {% for message in messages %}
+        <div class="alert-message {{ message.tags }}">
+            <a class="close" href="{% url message_mark_read message.pk %}">x</a>
+            <p><strong>Alert!</strong> {{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+

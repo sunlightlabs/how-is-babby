@@ -1,6 +1,16 @@
 <html>
     <head>
         <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-1.1.1.min.css">
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script>
+         $(document).ready(function() {
+             $("#messages").load("{% url viewer_eventalert %}");
+           var refreshId = setInterval(function() {
+              $("#messages").load("{% url viewer_eventalert %}");
+           }, 5000);
+           $.ajaxSetup({ cache: false });
+        });
+        </script>
         <title>How Is Babby</title>
     </head>
     <body style="padding-top: 40px">
@@ -15,7 +25,7 @@
                             </h3>
                             <ul>
                                 {% block nav-index %}<li><a href="{% url viewer_index %}">Monitor</a></li>{% endblock %}
-                                {% block nav-log %}<li><a href="{% url viewer_log %}">See Log</a></li>{% endblock %}
+                                <!--{% block nav-log %}<li><a href="{% url viewer_log %}">See Log</a></li>{% endblock %}-->
                                 {% block nav-configure %}<li><a href="{% url viewer_configure %}">Configure</a></li>{% endblock %}
                             </ul>
                         </div>
@@ -24,18 +34,9 @@
             </div>
 
 
-            {% if messages %}
-            <div class="row show-grid">
-                <div class="span8 columns">
-                    {% for message in messages %}
-                    <div class="alert-message {{ message.tags }}">
-                        <a class="close" href="{% url message_mark_read message.pk %}">x</a>
-                        <p><strong>Alert!</strong> {{ message }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
+            <div id="messages">
+                <!-- This gets replaced by AJAX, polled every five seconds -->
             </div>
-            {% endif %}
 
             <div class="row">&nbsp;</div>
 
