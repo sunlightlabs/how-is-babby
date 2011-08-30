@@ -20,14 +20,16 @@ class Watcher(object):
         self.motion_frames = 0
         self.mode = 'uncalibrated'
         self._set_led = freenect.LED_BLINK_YELLOW
+        self._set_video = None
         self._last_img = 0
+        self._snapshot = False
         self._last_setting_check = 0
 
-        self.settings_delay = 5
+        self.settings_delay = 10
+        self.snapshot_secs = 5
 
         self.debug = True
         self.nightvision = None
-        self._set_video = None
         self.dsum_buffer = RingBuffer(100)
         self.running_avg = AvgMatrix(15)
         self.load_settings()
@@ -42,8 +44,6 @@ class Watcher(object):
         if self.debug:
             print 'load_settings', profile.motion_sensitivity, profile.nightvision_on
 
-        self.snapshot_secs = 5
-
         # low
         if profile.motion_sensitivity < 10:
             self.change_threshold = 1.5
@@ -56,9 +56,6 @@ class Watcher(object):
         else:
             self.change_threshold = 1.0
             self.min_report_event = 20
-
-        self.debug = True
-        #self.debug = profile.debug
 
         if profile.nightvision_on != self.nightvision:
             self.nightvision = profile.nightvision_on
@@ -98,7 +95,8 @@ class Watcher(object):
                 if (self.motion_frames == self.min_report_event and
                     self.mode == 'nomotion'):
                     self.set_mode('motion')
-                    Alert.objects.create(event_type='motion')
+                    alert = Alert.objects.create(event_type='motion')
+                    self._snapshot = alert.id
             else:
                 # don't let motion_frames drop below 0
                 self.motion_frames = max(self.motion_frames-1, 0)
@@ -139,10 +137,16 @@ class Watcher(object):
         if self.debug:
             cv.ShowImage('Video', cv_data)
 
-        if self._last_img + self.snapshot_secs < time.time():
+
+        if (self._last_img + self.snapshot_secs < time.time() or
+            self._snapshot):
             cv.SaveImage('babby-current.jpg', cv_data)
             k = boto.s3.key.Key(self.s3bucket)
-            k.key = '/babby/current.jpg'
+            if self._snapshot:
+                k.key = '/babby/snapshot-%s.jpg' % self._snapshot
+                self._snapshot = False
+            else:
+                k.key = '/babby/current.jpg'
             k.set_contents_from_filename('babby-current.jpg')
             k.set_acl('public-read')
             self._last_img = time.time()
