@@ -23,6 +23,11 @@ class Watcher(object):
         self._last_img = 0
         self._last_setting_check = 0
 
+        self.debug = True
+        self.nightvision = False
+        self._set_video = None
+        self.dsum_buffer = RingBuffer(100)
+        self.running_avg = AvgMatrix(15)
         self.load_settings()
 
         self.s3bucket = boto.connect_s3(settings.AWS_KEY,
@@ -32,8 +37,9 @@ class Watcher(object):
     def load_settings(self):
         profile = UserProfile.objects.get()
 
-        self.dsum_buffer = RingBuffer(100)
-        self.running_avg = AvgMatrix(15)
+        if self.debug:
+            print 'load_settings', profile.motion_sensitivity, profile.nightvision_on
+
         self.snapshot_secs = 5
 
         # low
@@ -118,7 +124,8 @@ class Watcher(object):
             self._set_video = None
 
         if self._last_setting_check + 15 < time.time():
-            pass
+            self.load_settings()
+            self._last_setting_check = time.time()
 
 
     def video_callback(self, dev, data, timestamp):
