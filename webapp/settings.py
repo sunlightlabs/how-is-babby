@@ -99,6 +99,9 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 )
 
+AUTH_PROFILE_MODULE = 'viewer.UserProfile'
+
+
 try:
     from local_settings import *
 except ImportError, exp:

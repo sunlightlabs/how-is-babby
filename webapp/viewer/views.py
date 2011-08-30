@@ -1,8 +1,15 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
-from viewer.models import Alert
+from viewer.models import Alert, ConfigForm
 import time
+
+def login(request):
+    user = authenticate(username='babby', password='onthemove')
+    if not request.user:
+        login(request, user)
+
 
 def get_alert_obj():
     cur_time = round(time.time())
@@ -22,6 +29,7 @@ def set_up_alert(request):
             messages.info(request, 'The babby is crying!')
 
 def index(request):
+    login(request)
     set_up_alert(request)
 
     return render_to_response('index.html',
@@ -29,6 +37,7 @@ def index(request):
                               context_instance=RequestContext(request))
 
 def log(request):
+    login(request)
     set_up_alert(request)
 
     return render_to_response('log.html',
@@ -36,9 +45,28 @@ def log(request):
                               context_instance=RequestContext(request))
 
 def configure(request):
+    login(request)
     set_up_alert(request)
 
+    if request.method == 'POST':
+        form = ConfigForm(request.POST)
+        if form.is_valid():
+            config = request.user.get_profile()
+            d = form.cleaned_data
+
+            # set all the fields
+            config['motion_sensitivity'] = d['motion_sensitivity']
+            config['sound_sensitivity'] = d['sound_sensitivity']
+            config['distance'] = d['distance']
+            config['sms_email'] = d['sms_email']
+            config['sms_on'] = d['sms_on']
+            config['nightvision_on'] = d['nightvision_on']
+
+            config.save()
+    else:
+        form = ConfigForm()
+
     return render_to_response('configure.html',
-                              {},
+                              {'form': form },
                               context_instance=RequestContext(request))
 
