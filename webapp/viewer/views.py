@@ -1,13 +1,14 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
 from viewer.models import Alert, ConfigForm
+from django.forms.models import model_to_dict
 import time
 
-def login(request):
-    user = authenticate(username='babby', password='onthemove')
-    if not request.user:
+def set_user(request):
+    if not request.user.is_authenticated():
+        user = authenticate(username='babby', password='onthemove')
         login(request, user)
 
 
@@ -24,12 +25,12 @@ def set_up_alert(request):
     alert = get_alert_obj()
     if alert:
         if alert.event_type == 'motion':
-            messages.info(request, 'The babby is on the move!')
+            messages.info(request, 'The babby is on the move!', extra_tags='warning')
         else:
-            messages.info(request, 'The babby is crying!')
+            messages.info(request, 'The babby is crying!', extra_tags='warning')
 
 def index(request):
-    login(request)
+    set_user(request)
     set_up_alert(request)
 
     return render_to_response('index.html',
@@ -37,7 +38,7 @@ def index(request):
                               context_instance=RequestContext(request))
 
 def log(request):
-    login(request)
+    set_user(request)
     set_up_alert(request)
 
     return render_to_response('log.html',
@@ -45,26 +46,20 @@ def log(request):
                               context_instance=RequestContext(request))
 
 def configure(request):
-    login(request)
+    set_user(request)
     set_up_alert(request)
 
+    profile = request.user.get_profile()
+
     if request.method == 'POST':
-        form = ConfigForm(request.POST)
+        form = ConfigForm(request.POST, instance=profile)
         if form.is_valid():
-            config = request.user.get_profile()
-            d = form.cleaned_data
-
-            # set all the fields
-            config['motion_sensitivity'] = d['motion_sensitivity']
-            config['sound_sensitivity'] = d['sound_sensitivity']
-            config['distance'] = d['distance']
-            config['sms_email'] = d['sms_email']
-            config['sms_on'] = d['sms_on']
-            config['nightvision_on'] = d['nightvision_on']
-
-            config.save()
+            form.save()
+            messages.info(request, 'Settings saved!', extra_tags='success')
+        else:
+            messages.error(request, 'There was a problem saving your form.', extra_tags='error')
     else:
-        form = ConfigForm()
+        form = ConfigForm(instance=request.user.get_profile())
 
     return render_to_response('configure.html',
                               {'form': form },
