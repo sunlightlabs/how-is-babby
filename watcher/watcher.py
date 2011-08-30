@@ -30,22 +30,32 @@ class Watcher(object):
                                             settings.AWS_BUCKET)
 
     def load_settings(self):
-        try:
-            profile = UserProfile.objects.get()
-        except:
-            pass
+        profile = UserProfile.objects.get()
 
         self.dsum_buffer = RingBuffer(100)
         self.running_avg = AvgMatrix(15)
-        self.change_threshold = 1.1
-        self.min_report_event = 20
-        self.debug = True
         self.snapshot_secs = 5
 
-        self.nightvision = True
-        self._set_video = freenect.VIDEO_IR_8BIT
-        #self.nightvision = False
-        #self._set_video = freenect.VIDEO_RGB
+        # low
+        if profile.motion_sensitivity < 10:
+            self.change_threshold = 1.5
+            self.min_report_event = 30
+        # high
+        elif profile.motion_sensitivity > 10:
+            self.change_threshold = 0.7
+            self.min_report_event = 15
+        # normal
+        else:
+            self.change_threshold = 1.0
+            self.min_report_event = 20
+
+        self.debug = True
+        #self.debug = profile.debug
+
+        if profile.nightvision_on != self.nightvision:
+            self.nightvision = profile.nightvision_on
+            self._set_video = (freenect.VIDEO_IR_8BIT if self.nightvision
+                               else freenect.VIDEO_RGB)
 
 
     def set_mode(self, mode):
