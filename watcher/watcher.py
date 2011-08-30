@@ -118,7 +118,7 @@ class Watcher(object):
             freenect.set_led(dev, self._set_led)
             self._set_led = None
 
-        if self._set_video:
+        if self._set_video is not None:
             freenect.stop_video(dev)
             freenect.set_video_mode(dev, freenect.RESOLUTION_MEDIUM,
                                     self._set_video)
