@@ -33,7 +33,7 @@ def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):
         profile = request.user.get_profile()
 
-        profile.sms_on = not F('sms_on')
+        profile.sms_on = False if profile.sms_on else True
         profile.save()
 
         on_off = 'ON' if profile.sms_on else 'OFF'
