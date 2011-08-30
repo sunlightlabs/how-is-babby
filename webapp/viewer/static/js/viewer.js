@@ -4,7 +4,7 @@ socket.on('connect', function () {
         var img = document.getElementById('video_frame');
         img.src = imgUrl;
         // Image starts off hidden, to avoid a brief second of a broken image, so unhide it now.
-        img.style.display = '';
+        //img.style.display = '';
     });
 });
 
