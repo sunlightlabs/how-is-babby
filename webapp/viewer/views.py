@@ -4,8 +4,8 @@ from django.template import RequestContext
 from django.contrib import messages
 from viewer.models import Alert, ConfigForm
 import persistent_messages
-import time
-from datetime import datetime, timedelta
+#import time
+#from datetime import datetime, timedelta
 
 def set_user(request):
     if not request.user.is_authenticated():
@@ -15,12 +15,14 @@ def set_user(request):
 
 def set_up_alert(request):
     for alert in Alert.objects.all():
-        if alert.event_type == 'motion':
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning', email=True)
-        else:
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning', email=True)
+        persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning')#, #email=True)
         alert.delete()
 
+
+def alerts_ajax(request):
+    set_up_alert(request)
+
+    return render_to_response('messages.html', {}, context_instance=RequestContext(request))
 
 def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):

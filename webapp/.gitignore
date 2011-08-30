@@ -1,5 +1,6 @@
 *.pyc
 *.swk
+*.swh
 *.swj
 *.swi
 *.db
