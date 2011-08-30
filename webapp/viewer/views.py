@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
-from viewer.models import Alert, ConfigForm
+from viewer.models import Alert, ConfigForm, User
 import persistent_messages
 import time
 from datetime import datetime, timedelta
@@ -13,12 +13,19 @@ def set_user(request):
         login(request, user)
 
 
+class FakeUser(object):
+    def __init__(self):
+        self.email = 'partytime@sunlightfoundation.com'
+
 def set_up_alert(request):
+    user = authenticate(username='babby', password='onthemove')
+    from_user = FakeUser()
     for alert in Alert.objects.all():
         if alert.event_type == 'motion':
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning', email=True)
+
+            persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='The babby is on the move!', extra_tags='warning', email=False, user=user, from_user=user, fail_silently=True)
         else:
-            persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning', email=True)
+            persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is crying!', subject='The babby is crying!', extra_tags='warning', email=False, user=user, from_user=user, fail_silently=True)
         alert.delete()
 
 
