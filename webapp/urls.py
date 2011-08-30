@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     # (r'^admin/', include(admin.site.urls)),
 
+    (r'^messages/', include('persistent_messages.urls')),
     (r'^view/', include('viewer.urls'))
 )
