@@ -12,22 +12,14 @@ def set_user(request):
         login(request, user)
 
 
-def get_alert_obj():
-    cur_time = round(time.time())
-    type_switch = cur_time % 3
-    alert_switch = cur_time % 5
-    if alert_switch == 1:
-        return Alert.objects.create(event_type='motion' if type_switch else 'sound')
-    else:
-        return None
-
 def set_up_alert(request):
-    alert = get_alert_obj()
-    if alert:
+    for alert in Alert.objects.all():
         if alert.event_type == 'motion':
             persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is on the move!', extra_tags='warning', email=True)
         else:
             persistent_messages.add_message(request, persistent_messages.WARNING, 'The babby is crying!', extra_tags='warning', email=True)
+        alert.delete()
+
 
 def toggle_sms(request):
     if request.method == 'POST' and request.POST.get('toggle_sms', None):

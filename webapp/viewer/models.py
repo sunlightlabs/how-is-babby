@@ -6,6 +6,7 @@ from django import forms
 
 class Alert(models.Model):
     event_type = models.CharField(max_length=6, null=False, blank=False)
+    timestamp = models.DateTimeField()
     # we'll also need a timestamp for queueing events
 
 
