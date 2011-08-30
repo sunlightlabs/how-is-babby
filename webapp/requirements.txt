@@ -1,1 +1,2 @@
 -e git://github.com/philomat/django-persistent-messages.git#egg=django-persistent-messages
+django-postmark==0.1.6

@@ -93,6 +93,7 @@ AUTH_PROFILE_MODULE = 'viewer.UserProfile'
 MESSAGE_STORAGE = 'persistent_messages.storage.PersistentMessageStorage'
 
 
+
 try:
     from local_settings import *
 except ImportError, exp:

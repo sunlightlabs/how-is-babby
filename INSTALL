@@ -1,0 +1,11 @@
+
+Step 1. Install OpenKinect from source
+    http://openkinect.org/wiki/Getting_Started#Ubuntu
+
+Step 2. checkout how-is-babby
+    git clone https://github.com/sunlightlabs/how-is-babby.git
+
+Step 3.  sudo aptitude install Cython python-opencv python-dev python-numpy python-boto
+pip install requirements.txt
+
+
