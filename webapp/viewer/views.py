@@ -1,9 +1,9 @@
 from django.contrib.auth import authenticate, login
+from django.db.models import F
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
 from viewer.models import Alert, ConfigForm
-from django.forms.models import model_to_dict
 import time
 
 def set_user(request):
@@ -29,9 +29,22 @@ def set_up_alert(request):
         else:
             messages.info(request, 'The babby is crying!', extra_tags='warning')
 
+def toggle_sms(request):
+    if request.method == 'POST' and request.POST.get('toggle_sms', None):
+        profile = request.user.get_profile()
+
+        profile.sms_on = not F('sms_on')
+        profile.save()
+
+        on_off = 'ON' if profile.sms_on else 'OFF'
+
+        messages.info(request, 'SMS Notifications have been turned {0}'.format(on_off), extra_tags='success')
+
+
 def index(request):
     set_user(request)
     set_up_alert(request)
+    toggle_sms(request)
 
     return render_to_response('index.html',
                               {},
@@ -64,4 +77,5 @@ def configure(request):
     return render_to_response('configure.html',
                               {'form': form },
                               context_instance=RequestContext(request))
+
 

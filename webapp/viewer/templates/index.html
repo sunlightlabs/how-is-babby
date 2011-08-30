@@ -10,8 +10,9 @@
             </div>
             <div class="row">
                 <div class="span4 columns">
-                    <form>
-                        <button class="btn success">Start/Stop Notifications</button>
+                    <form action="/view/" method="post">
+                        {% csrf_token %}
+                        <input type="submit" class="btn success" name="toggle_sms" value="Start/Stop Notifications" />
                     </form>
                 </div>
             </div>
