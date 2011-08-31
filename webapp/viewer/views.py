@@ -25,9 +25,9 @@ def get_new_recent_alerts(request):
                 message='The babby is on the move!',
                 subject='Alert',
                 extra_tags='warning',
-                email=user.get_profile().sms_on,
-                user=user,
-                from_user=request.session['sender_user'],
+                email=False,
+                #user=user,
+                #from_user=request.session['sender_user'],
                 fail_silently=True
         )
 
