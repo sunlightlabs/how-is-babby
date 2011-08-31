@@ -1,7 +1,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-1.1.1.min.css">
-        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery-1.6.2.min.js" type="text/javascript"></script>
         <script>
          $(document).ready(function() {
              $("#messages").load("{% url viewer_eventalert %}");
@@ -9,7 +9,14 @@
               $("#messages").load("{% url viewer_eventalert %}");
            }, 5000);
            $.ajaxSetup({ cache: false });
+
+           $("a.close").live('click', function(e) {
+               e.preventDefault();
+               $(this).parent('div.alert-message').hide('fast');
+               $.ajax(this.href);
+           });
         });
+
         </script>
         <title>How Is Babby</title>
     </head>

@@ -4,7 +4,7 @@
         {% for message in messages %}
         <div class="alert-message {{ message.tags }}">
             <a class="close" href="{% url message_mark_read message.pk %}">x</a>
-            <p><strong>Alert!</strong> {{ message }}</p>
+            <p>{{ message }}</p>
         </div>
         {% endfor %}
     </div>
