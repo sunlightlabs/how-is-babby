@@ -13,17 +13,12 @@ def set_user(request):
         login(request, user)
 
 
-class FakeUser(object):
-    def __init__(self):
-        self.email = 'partytime@sunlightfoundation.com'
-
 def get_new_recent_alerts(request):
     user = authenticate(username='babby', password='onthemove')
-    from_user = FakeUser()
 
     alerts = Alert.objects.filter(timestamp__gte=datetime.now()-timedelta(seconds=5)).order_by('timestamp')
     if len(alerts):
-        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.get_profile().sms_on, user=user, from_user=user, fail_silently=True)
+        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.get_profile().sms_on, user=user, from_user=user, fail_silently=False)
 
 
 def alerts_ajax(request):
