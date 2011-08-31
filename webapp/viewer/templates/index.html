@@ -12,7 +12,8 @@
                 <div class="span4 columns">
                     <form action="/view/" method="post">
                         {% csrf_token %}
-                        <input type="submit" class="btn success" name="toggle_sms" value="Start/Stop Notifications" />
+                        <input type="submit" class="btn success" name="toggle_sms" value="Start/Stop SMS Notifications" />
+                        <p><em>(Currently {{ sms_status }})</em></p>
                     </form>
                 </div>
             </div>

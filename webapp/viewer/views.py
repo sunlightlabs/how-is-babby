@@ -23,7 +23,7 @@ def get_new_recent_alerts(request):
 
     alerts = Alert.objects.filter(timestamp__gte=datetime.now()-timedelta(seconds=5)).order_by('timestamp')
     if len(alerts):
-        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=False, user=user, from_user=user, fail_silently=True)
+        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.profile.sms_on, user=user, from_user=user, fail_silently=True)
 
 
 def alerts_ajax(request):
@@ -48,9 +48,11 @@ def index(request):
     get_new_recent_alerts(request)
     toggle_sms(request)
 
+    sms_status = 'ON' if request.user.get_profile().sms_on else 'OFF'
+
     return render_to_response('index.html',
-                              {},
-                              context_instance=RequestContext(request))
+            {'sms_status': sms_status},
+            context_instance=RequestContext(request))
 
 def log(request):
     set_user(request)
