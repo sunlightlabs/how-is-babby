@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib import messages
-from viewer.models import Alert, ConfigForm
+from viewer.models import Alert, ConfigForm, User
 import persistent_messages
 #import time
 from datetime import datetime, timedelta
@@ -12,13 +12,24 @@ def set_user(request):
         user = authenticate(username='babby', password='onthemove')
         login(request, user)
 
+        request.session['sender_user'] = User.objects.filter(pk=2) # get the partytime user for sending emails to
 
 def get_new_recent_alerts(request):
     user = authenticate(username='babby', password='onthemove')
 
     alerts = Alert.objects.filter(timestamp__gte=datetime.now()-timedelta(seconds=5)).order_by('timestamp')
     if len(alerts):
-        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.get_profile().sms_on, user=user, from_user=user, fail_silently=False)
+        persistent_messages.add_message(
+                request,
+                persistent_messages.WARNING,
+                message='The babby is on the move!',
+                subject='Alert',
+                extra_tags='warning',
+                email=user.get_profile().sms_on,
+                user=user,
+                from_user=request.session['sender_user'],
+                fail_silently=True
+        )
 
 
 def alerts_ajax(request):
