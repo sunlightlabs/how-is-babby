@@ -23,7 +23,7 @@ def get_new_recent_alerts(request):
 
     alerts = Alert.objects.filter(timestamp__gte=datetime.now()-timedelta(seconds=5)).order_by('timestamp')
     if len(alerts):
-        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.profile.sms_on, user=user, from_user=user, fail_silently=True)
+        persistent_messages.add_message(request, persistent_messages.WARNING, message='The babby is on the move!', subject='Alert', extra_tags='warning', email=user.get_profile().sms_on, user=user, from_user=user, fail_silently=True)
 
 
 def alerts_ajax(request):
